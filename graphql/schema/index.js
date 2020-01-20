@@ -9,7 +9,7 @@ type Bewoner {
     moveOutDate: String
     user: User!
     title: Title
-    profilePicture: String
+    profilePicture: Photo
 }
 
 type User {
@@ -30,6 +30,15 @@ type Title {
     name: String!
     bewoner: Bewoner!
     date: String!
+}
+
+type Photo {
+    _id: ID!
+    picture: String!
+    createdAt: String!
+    bewoner: Bewoner!
+    private: Boolean
+    description: String
 }
 
 input BewonerInput {

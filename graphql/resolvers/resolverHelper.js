@@ -1,10 +1,11 @@
 const Bewoner = require('../../models/bewoner');
 const User = require('../../models/user');
 const Title = require('../../models/title');
+const Photo = require('../../models/photo');
 const { dateToString } = require('../../helpers/date');
 const fs = require('fs');
 
-const FOLDERPATH= 'C:/Users/Suzanna Wentzel/Documents/Snuifhuis/SnuifhuisWebsite/Versie 3/Code/Snuifhuis.backend'
+const FOLDERPATH= 'C:/Users/Suzanna Wentzel/Documents/Snuifhuis/SnuifhuisWebsite/Versie 3/Code/Snuifhuis.backend/public/uploads/'
 
 const transformBewoner = async bewoner => {
     return {
@@ -13,7 +14,7 @@ const transformBewoner = async bewoner => {
         moveOutDate: dateToString(bewoner._doc.moveOutDate),
         user: getUser.bind(this, bewoner.user),
         title: bewoner._doc.title? getTitle.bind(this, bewoner.title) : undefined,
-        profilePicture: bewoner.profilePicture? await getBase64OfPicture(bewoner.profilePicture) : undefined
+        profilePicture: bewoner.profilePicture? await getPhoto.bind(this, bewoner.profilePicture) : undefined
     };
 }
 
@@ -30,6 +31,15 @@ const transformUser = user => {
         ...user._doc,
         bewoner: user.bewoner? getBewoner.bind(this, user.bewoner) : undefined,
         password: null
+    }
+}
+
+const transformPhoto = photo => {
+    return {
+        ...photo._doc,
+        bewoner: getBewoner.bind(this, photo.bewoner),
+        createdAt: dateToString(photo._doc.createdAt),
+        picture: getBase64OfPicture(photo.picturePath)
     }
 }
 
@@ -64,6 +74,15 @@ const getBewoner = async bewonerId => {
     }
 }
 
+const getPhoto = async photoId => {
+    try {
+        const photo = await Photo.findById(photoId);
+        return await transformPhoto(photo);
+    } catch (error) {
+        throw error;
+    }
+}
+
 // returns filePath of where image is stored.
 const savePictureFromBase64 = async base64ImageInput => {
     let base64Image = base64ImageInput.replace(/^data:image\/\w+;base64,/, '');
@@ -74,7 +93,7 @@ const savePictureFromBase64 = async base64ImageInput => {
         if (err) {
             throw new Error(err);
         } else {
-            console.log('FileName: ', fileName);
+            console.log('File saved!');
         }
     });
 
@@ -83,20 +102,7 @@ const savePictureFromBase64 = async base64ImageInput => {
 
 const getBase64OfPicture = async filePath => {
     var bitmap = fs.readFileSync(FOLDERPATH + filePath, {encoding: 'base64'});
-    // const file = new File(FOLDERPATH + filePath,"r");
-    // const base64Picture = await readFileAsDataURL(file);
-    // console.log(base64Picture);
     return 'data:image/png;base64,' + bitmap;
-}
-
-const readFileAsDataURL = async file => {
-    let result_base64 = await new Promise((resolve) => {
-        let fileReader = new FileReader();
-        fileReader.onload = (e) => resolve(fileReader.result);
-        fileReader.readAsDataURL(file);
-    });
-
-    return result_base64
 }
 
 const removePicture = async filePath => {
@@ -118,3 +124,4 @@ exports.transformTitle = transformTitle;
 exports.transformUser = transformUser;
 exports.savePicture = savePictureFromBase64;
 exports.removePicture = removePicture;
+exports.transformPhoto = transformPhoto;

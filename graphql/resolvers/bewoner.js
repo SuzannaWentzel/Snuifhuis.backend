@@ -1,9 +1,8 @@
 const Bewoner = require('../../models/bewoner');
 const User = require('../../models/user');
+const Photo = require('../../models/photo');
 const { transformBewoner, savePicture } = require('./resolverHelper');
 const ERROR = require('../../helpers/errors');
-
-const FOLDERPATH= 'C:/Users/Suzanna Wentzel/Documents/Snuifhuis/SnuifhuisWebsite/Versie 3/Code/backend/'
 
 module.exports = {
     bewoners: async () => {
@@ -28,6 +27,18 @@ module.exports = {
                 moveOutDate: new Date(args.bewonerInput.moveOutDate),
                 user: req.userId
             });
+
+            if (args.bewonerInput.profilePicture){
+                let filePath = await savePicture(args.bewonerInput.profilePicture);
+                const photo = new Photo({
+                    picturePath: filePath,
+                    createdAt: new Date(),
+                    bewoner: bewoner
+                });
+                const savedPhoto = await photo.save();
+                bewoner.profilePicture = savedPhoto._id;
+            }
+
             let createdBewoner;
             const result = await bewoner.save();
             createdBewoner = await transformBewoner(result);
@@ -89,7 +100,13 @@ module.exports = {
 
             if (args.bewonerInput.profilePicture){
                 let filePath = await savePicture(args.bewonerInput.profilePicture);
-                bewoner.profilePicture = filePath;
+                const photo = new Photo({
+                    picturePath: filePath,
+                    createdAt: new Date(),
+                    bewoner: bewoner
+                });
+                const savedPhoto = await photo.save();
+                bewoner.profilePicture = savedPhoto._id;
             }
             
             bewoner.name = args.bewonerInput.name;
