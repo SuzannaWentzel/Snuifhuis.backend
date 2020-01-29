@@ -27,7 +27,8 @@ const bewonerSchema = new Schema({
         ref: 'Title'
     },
     profilePicture: {
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: 'Photo'
     }
 });
 

@@ -9,7 +9,7 @@ type Bewoner {
     moveOutDate: String
     user: User!
     title: Title
-    profilePicture: String
+    profilePicture: Photo
 }
 
 type User {
@@ -32,6 +32,16 @@ type Title {
     date: String!
 }
 
+type Photo {
+    _id: ID!
+    picture: String!
+    createdAt: String!
+    bewoner: Bewoner!
+    private: Boolean
+    description: String
+    fwos: Boolean
+}
+
 input BewonerInput {
     _id: ID
     name: String!
@@ -51,12 +61,22 @@ input TitleInput {
     date: String
 }
 
+input PhotoInput {
+    _id: ID
+    picture: String!
+    description: String
+    private: Boolean
+    fwos: Boolean
+}
+
 type RootQuery {
     bewoner(bewonerId: String!): Bewoner
     bewoners: [Bewoner!]!
     titles: [Title!]!
     login(email: String!, password: String!): AuthData!
     user(userId: String!): User
+    photos(bewonerId: String): [Photo!]!
+    fwosPhotos(bewonerId: String): [Photo!]!
 }
 
 type RootMutation {
@@ -68,6 +88,9 @@ type RootMutation {
     deleteUser(userId: String!): Boolean
     createTitle(titleInput: TitleInput, bewonerId: String): Title
     giveTitle(titleId: String, bewonerId: String): Bewoner
+    createPhoto(photoInput: PhotoInput!): Photo
+    createPhotos(photoInputs: [PhotoInput!]!): [Photo]
+    editPhoto(photoInput: PhotoInput!): Photo!
 }
 
 schema {
