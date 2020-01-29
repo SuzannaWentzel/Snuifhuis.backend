@@ -29,11 +29,13 @@ module.exports = {
             });
 
             if (args.bewonerInput.profilePicture){
-                let filePath = await savePicture(args.bewonerInput.profilePicture);
+                let filePath = await savePicture(args.bewonerInput.profilePicture, true);
                 const photo = new Photo({
                     picturePath: filePath,
                     createdAt: new Date(),
-                    bewoner: bewoner
+                    bewoner: bewoner,
+                    profilePicture: true,
+                    fwos: false,
                 });
                 const savedPhoto = await photo.save();
                 bewoner.profilePicture = savedPhoto._id;
@@ -99,11 +101,14 @@ module.exports = {
             }
 
             if (args.bewonerInput.profilePicture){
-                let filePath = await savePicture(args.bewonerInput.profilePicture);
+                let filePath = await savePicture(args.bewonerInput.profilePicture, true);
+                console.log('path: ', filePath);
                 const photo = new Photo({
                     picturePath: filePath,
                     createdAt: new Date(),
-                    bewoner: bewoner
+                    bewoner: bewoner,
+                    profilePicture: true,
+                    fwos: false,
                 });
                 const savedPhoto = await photo.save();
                 bewoner.profilePicture = savedPhoto._id;

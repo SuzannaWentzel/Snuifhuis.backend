@@ -4,8 +4,13 @@ const Title = require('../../models/title');
 const Photo = require('../../models/photo');
 const { dateToString } = require('../../helpers/date');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const fsp = require('fs').promises;
 
 const FOLDERPATH= 'C:/Users/Suzanna Wentzel/Documents/Snuifhuis/SnuifhuisWebsite/Versie 3/Code/Snuifhuis.backend/public/uploads/'
+
+// to get a function for waiting for writeFile to be finished.
+// const writePicture = promisify(fs.writeFile);
 
 const transformBewoner = async bewoner => {
     return {
@@ -39,7 +44,7 @@ const transformPhoto = photo => {
         ...photo._doc,
         bewoner: getBewoner.bind(this, photo.bewoner),
         createdAt: dateToString(photo._doc.createdAt),
-        picture: getBase64OfPicture(photo.picturePath)
+        picture: photo.picturePath,
     }
 }
 
@@ -84,25 +89,28 @@ const getPhoto = async photoId => {
 }
 
 // returns filePath of where image is stored.
-const savePictureFromBase64 = async base64ImageInput => {
+const savePictureFromBase64 = async (base64ImageInput, profile) => {
     let base64Image = base64ImageInput.replace(/^data:image\/\w+;base64,/, '');
     let fileNameTemp = '' + new Date().toISOString() + Math.random() + '.png';
-    let fileName = fileNameTemp.split(':').join('');
-    
-    fs.writeFile(FOLDERPATH + fileName, base64Image, {encoding: 'base64'}, function(err) {
-        if (err) {
-            throw new Error(err);
-        } else {
-            console.log('File saved!');
-        }
-    });
+    // if profile picture, store in profile folder
+    let fileName ="";
+    if (profile) {
+        fileName = "profile/"
+    }
+    fileName += fileNameTemp.split(':').join('');
 
-    return fileName;
-}
-
-const getBase64OfPicture = async filePath => {
-    var bitmap = fs.readFileSync(FOLDERPATH + filePath, {encoding: 'base64'});
-    return 'data:image/png;base64,' + bitmap;
+    try {
+        await fsp.writeFile(FOLDERPATH + fileName, base64Image, {encoding: 'base64'});
+        let image = await cloudinary.uploader.upload(FOLDERPATH + fileName, {
+            resource_type: "image",
+            public_id: fileName,
+            overwrite: true
+        });
+        return image.secure_url;  
+    } catch (error) {
+        console.error(error);
+        throw new Error(error);
+    }
 }
 
 const removePicture = async filePath => {

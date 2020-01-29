@@ -22,6 +22,13 @@ const photoSchema = new Schema({
     private: {
         type: Boolean,
     },
+    fwos: {
+        type: Boolean,
+        required: true,
+    },
+    profilePicture: {
+        type: Boolean,
+    }
 });
 
 module.exports = mongoose.model('Photo', photoSchema);
